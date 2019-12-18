@@ -11,6 +11,10 @@ from sklearn.model_selection import KFold
 from scipy.stats import norm
 from operator import itemgetter
 from sklearn.model_selection import cross_val_score
+import tensorflow as tf
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
 %matplotlib inline
 
 def scores(y, model):
@@ -35,11 +39,8 @@ def data_processing(file_name):
 
 
 # Main
-# SVR
+# KNN
 df = data_processing("wr_stats.csv")
-
-df1 = df[0:402]
-df2 = df[402:602]
 
 train, test = train_test_split(df1, test_size = 0.25, random_state = 10)
 
@@ -49,16 +50,18 @@ ytrain = train[['Yds']]
 xtest = test[['Rec','Tgt','TD','G','GS','PPR']]
 ytest = test[['Yds']]
 
-svr = SVR(kernel='rbf', gamma=1e-4, C=100, epsilon = .1)
-y_svr = []
-scores(y_svr, svr)
+df1 = df[0:402]
+df2 = df[402:602]
 
+knn = neighbors.KNeighborsRegressor(n_neighbors = 7, weights = 'uniform')
+y_knn = []
+scores(y_knn, knn)
 
-playerNames = df1.iloc[:, 1]
+playerNames = df2.iloc[:, 1]
 dfCurrentPredict = df2[['Rec','Tgt','TD','G','GS','PPR']]
 
-svrPredict = svr.predict(dfCurrentPredict)
-svrPredict = svrPredict.tolist()
+knnPredict = knn.predict(dfCurrentPredict)
+knnPredict = knnPredict.tolist()
 
-for (i,j) in zip(playerNames, svrPredict):
-	print(i,j)
+for (i, j) in zip(playerNames, knnPredict):
+    print(i, j)
