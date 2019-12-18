@@ -1,3 +1,7 @@
+# 2019 WR Yards predictions using K Nearest Neighbors Regression
+# authors: Manish Goud, Ram Bala
+# 2019 December 18
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,7 +21,8 @@ from keras.models import Sequential
 from keras.layers import Dense
 %matplotlib inline
 
-def scores(y, model):
+# Function to display accuracy results of model
+def print_accuracy(y, model):
     
     model.fit(xtrain, ytrain.values.ravel())
     y_pred = model.predict(xtest)
@@ -31,37 +36,45 @@ def scores(y, model):
     for i in y_pred:
         y.append(i)
 
-def data_processing(file_name):
-	# Read the csv files with data
-	df = pd.read_csv(file_name)
-	df.fillna(0, inplace=True)
-	return df
+# Function to read information from csv and return dataframe
+def read_file(file_name):
+    # Read the csv files with data
+    df = pd.read_csv(file_name)
+    df.fillna(0, inplace=True) # clean up data
+    return df
 
 
 # Main
-# KNN
-df = data_processing("wr_stats.csv")
+# Predicting using KNN
+df = read_file("wr_stats.csv")
 
-train, test = train_test_split(df1, test_size = 0.25, random_state = 10)
+stats2016to2018 = df[0:603]
+midseason2019 = df[603:]
 
-xtrain = train[['Rec','Tgt','TD','G','GS','PPR']]
+train, test = train_test_split(stats2016to2018, test_size = 0.25, random_state = 10)
+
+# Use variables to train for relationship 
+xtrain = train[['Rec','Tgt','TD','G','GS','PPR']] 
+# Find relationship between features and Yds variable
 ytrain = train[['Yds']]
 
 xtest = test[['Rec','Tgt','TD','G','GS','PPR']]
 ytest = test[['Yds']]
 
-df1 = df[0:402]
-df2 = df[402:602]
-
-knn = neighbors.KNeighborsRegressor(n_neighbors = 7, weights = 'uniform')
+# Set up KNN 
+knn = neighbors.KNeighborsRegressor(n_neighbors = 10, weights = 'distance')
 y_knn = []
-scores(y_knn, knn)
+print_accuracy(y_knn, knn)
 
-playerNames = df2.iloc[:, 1]
-dfCurrentPredict = df2[['Rec','Tgt','TD','G','GS','PPR']]
+playerNames = midseason2019.iloc[:, 1] # extract player names
+predictions = midseason2019[['Rec','Tgt','TD','G','GS','PPR']]
 
-knnPredict = knn.predict(dfCurrentPredict)
+# Use kNN to predict yards for players
+knnPredict = knn.predict(predictions)
 knnPredict = knnPredict.tolist()
 
+# print values of player and corresponding predicted yards for 2019 season
 for (i, j) in zip(playerNames, knnPredict):
     print(i, j)
+
+

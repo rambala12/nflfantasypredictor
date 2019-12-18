@@ -1,3 +1,7 @@
+# 2019 WR Yards predictions using Support Vector Regression
+# authors: Manish Goud, Ram Bala
+# 2019 December 18
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +17,8 @@ from operator import itemgetter
 from sklearn.model_selection import cross_val_score
 %matplotlib inline
 
-def scores(y, model):
+# Function to report accuracy of model
+def print_accuracy(y, model):
     
     model.fit(xtrain, ytrain.values.ravel())
     y_pred = model.predict(xtest)
@@ -27,38 +32,47 @@ def scores(y, model):
     for i in y_pred:
         y.append(i)
 
-def data_processing(file_name):
-	# Read the csv files with data
-	df = pd.read_csv(file_name)
-	df.fillna(0, inplace=True)
-	return df
+def read_file(file_name):
+    # Read the csv files with data
+    df = pd.read_csv(file_name)
+    df.fillna(0, inplace=True)
+    return df
 
 
-# Main
-# SVR
-df = data_processing("wr_stats.csv")
+# Main Program
+# Predicting using Support Vector Regression
+df = read_file("wr_stats.csv")
 
-df1 = df[0:402]
-df2 = df[402:602]
+# Split the data
+# use 2016 to 2018 stats to train
+stats2016to18 = df[0:603] 
+# test on mideason 2019 stats to predict end of season standings
+midseason2019 = df[603:] 
 
-train, test = train_test_split(df1, test_size = 0.25, random_state = 10)
+train, test = train_test_split(stats2016to18, test_size = 0.25, random_state = 10)
 
-xtrain = train[['Rec','Tgt','TD','G','GS','PPR']]
+# Use variables to train for relationship 
+xtrain = train[['Rec','Tgt','TD','G','GS','PPR']] 
+# Find relationship between features and Yds variable
 ytrain = train[['Yds']]
 
 xtest = test[['Rec','Tgt','TD','G','GS','PPR']]
 ytest = test[['Yds']]
 
-svr = SVR(kernel='rbf', gamma=1e-4, C=100, epsilon = .1)
+# Set up SVR
+svr = SVR(kernel='rbf', gamma=1e-5, C=2000)
 y_svr = []
-scores(y_svr, svr)
+print_accuracy(y_svr, svr)
 
 
-playerNames = df1.iloc[:, 1]
-dfCurrentPredict = df2[['Rec','Tgt','TD','G','GS','PPR']]
+playerNames = midseason2019.iloc[:, 1] # extract player names
+predictions = midseason2019[['Rec','Tgt','TD','G','GS','PPR']]
 
-svrPredict = svr.predict(dfCurrentPredict)
+svrPredict = svr.predict(predictions)
 svrPredict = svrPredict.tolist()
 
 for (i,j) in zip(playerNames, svrPredict):
-	print(i,j)
+    print(i,j)
+
+
+    
